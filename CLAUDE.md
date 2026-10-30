@@ -5,7 +5,7 @@ dazu Top 25 nach Genre und die meistgespielten Songs.
 
 ## Technik
 - Eine einzige `index.html`, ohne Server und ohne Datenbank. Die Daten stehen als JSON im
-  `<script id="data">`-Block (Songs: Titel, Artist, Plays, BPM; Übergänge; Genres).
+  `<script id="data">`-Block (Songs: Titel, Artist, Plays, BPM, Camelot-Key; Übergänge; Genres).
 - `noindex` im Kopf der Seite: Suchmaschinen sollen sie nicht aufnehmen. Das Repo selbst ist trotzdem öffentlich.
 - Icon: `icon.svg` (Browser-Tab) und `apple-touch-icon.png` (iPhone-Homebildschirm, 180 px).
 - Einstellungen (Anzahl, Richtung, Genre) merkt sich der Browser per localStorage.
@@ -18,3 +18,10 @@ dazu Top 25 nach Genre und die meistgespielten Songs.
 
 ## Veröffentlichen
 `index.html` ändern, dann committen und `git push`. GitHub Pages ist nach ca. 1 Minute aktuell.
+
+## Daten
+- Quelle: Serato-History (`~/Music/_Serato_/History/Sessions/*.session`) und Bibliothek (`~/Music/_Serato_/database V2`).
+  Parser dafür: `../Serato MP3/Engine/historycrate.py`.
+- Camelot-Key: Session-Feld 51 bzw. `tkey` in der Bibliothek, zugeordnet über Titel + Artist (häufigster Wert).
+  Rund 88 % der Songs haben einen Key, eigene Mixe meist nicht.
+- Lokal testen: Browser-Vorschau „folgesong“ aus `Coding/.claude/launch.json` (http://localhost:8765).
