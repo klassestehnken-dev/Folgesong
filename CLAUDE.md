@@ -6,6 +6,7 @@ dazu Top 25 nach Genre und die meistgespielten Songs.
 ## Technik
 - Eine einzige `index.html`, ohne Server und ohne Datenbank. Die Daten stehen als JSON im
   `<script id="data">`-Block (Songs: Titel, Artist, Plays, BPM; Übergänge; Genres).
+- `noindex` im Kopf der Seite: Suchmaschinen sollen sie nicht aufnehmen. Das Repo selbst ist trotzdem öffentlich.
 - Einstellungen (Anzahl, Richtung, Genre) merkt sich der Browser per localStorage.
 - Ursprünglich als Claude-Artefakt gebaut: https://claude.ai/artifact/RCN5V3KeQC4aXY6jUtTcXH
 
