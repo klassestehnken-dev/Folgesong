@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="acc" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff7a3d"/>
+      <stop offset="1" stop-color="#ffb347"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="#0e0f13"/>
+  <!-- Platte -->
+  <circle cx="232" cy="276" r="176" fill="#1c1e26"/>
+  <g fill="none" stroke="#33374a" stroke-width="5">
+    <circle cx="232" cy="276" r="150"/>
+    <circle cx="232" cy="276" r="126"/>
+    <circle cx="232" cy="276" r="102"/>
+  </g>
+  <path d="M232 132 A144 144 0 0 1 368 222" fill="none" stroke="#ffffff" stroke-opacity=".12" stroke-width="12" stroke-linecap="round"/>
+  <!-- Label -->
+  <circle cx="232" cy="276" r="66" fill="url(#acc)"/>
+  <circle cx="232" cy="276" r="10" fill="#0e0f13"/>
+  <!-- Tonarm -->
+  <circle cx="420" cy="104" r="34" fill="#262934" stroke="#8b90a0" stroke-width="6"/>
+  <circle cx="420" cy="104" r="12" fill="#eceef3"/>
+  <path d="M420 104 L420 250 L348 322" fill="none" stroke="#eceef3" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="318" y="306" width="52" height="34" rx="8" fill="#eceef3" transform="rotate(45 344 323)"/>
+</svg>
