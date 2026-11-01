@@ -15,8 +15,7 @@ HTML = os.path.join(HIER, "..", "index.html")
 
 GENRES = ["Hip-Hop & R&B (ab 2000)", "90er Hip-Hop & R&B", "Deutschrap & Hip-Hop", "Reggae & Dancehall",
           "Deutschpop & Deutschrock", "Kölsch & Karneval", "Schlager & Ballermann", "Latin & Reggaeton",
-          "Rock-Klassiker & Hard Rock", "Indie & Pop-Punk",
-          "Charts-House & EDM", "Club & Electro House", "Deep House & Nu-Disco", "Funk, Soul & Electro-Swing", "Balkan & Weltmusik",
+          "Rock & Indie", "House & EDM", "Funk, Soul & Electro-Swing", "Balkan & Weltmusik",
           "2020er", "2010er Pop", "2000er Pop", "90er Pop", "90er Eurodance", "80er", "70er", "Oldies (50er & 60er)",
           "Hochzeit, Balladen & Dinner", "Covers & Akustik", "Specials", "Eigene Mixe & Jingles"]
 
