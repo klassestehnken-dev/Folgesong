@@ -251,6 +251,8 @@ function keyRel(a,b){const x=pk(a),y=pk(b);if(!x||!y)return null;
   if(x[0]===y[0])return 'Dur/Moll-Wechsel';
   const d=(y[0]-x[0]+12)%12; if(x[1]===y[1]&&(d===1||d===11))return d===1?'+1':'−1';
   return null;}
+// Tempo-Abstand: auch halbes/doppeltes Tempo zählt (73 ↔ 146 BPM)
+function tempo(b,t){let best=[t-b,''];for(const [x,lab] of [[t*2,'halb'],[t/2,'doppelt']]){const d=Math.round(x-b);if(Math.abs(d)<Math.abs(best[0]))best=[d,lab];}return best;}
 function renderMatch(){
   const i=state.song, s=S[i], c=CAT[i], b=s[3], k=s[4];
   const nx=new Map(NEXT[i]), pv=new Map(PREV[i]);
@@ -263,7 +265,7 @@ function renderMatch(){
   if(state.km===1&&!pk(k)) notes.push('Für diesen Song ist kein Key gespeichert. Deshalb wird der Key nicht berücksichtigt.');
   const res=[];
   for(let j=0;j<S.length;j++){ if(j===i||!S[j][3]) continue;
-    const d=S[j][3]-b; if(Math.abs(d)>state.tol) continue;
+    const [d]=tempo(b,S[j][3]); if(Math.abs(d)>state.tol) continue;
     if(useG && CAT[j]!==c) continue;
     const rel=keyRel(k,S[j][4]);
     if(useKey && !rel) continue;
@@ -272,12 +274,12 @@ function renderMatch(){
   const top=res.slice(0,state.n), mx=top.length?S[top[0][0]][2]:1;
   if(notes.length) h+=`<div class="hint" style="margin:0 0 8px">${notes.join(' ')}</div>`;
   if(!top.length) h+=`<div class="empty">Keine passenden Songs gefunden. Probier einen größeren BPM-Bereich${useKey?' oder Key „egal“':''}${useG?' oder Genre „egal“':''}.</div>`;
-  h+=top.map(([j,rel],n)=>{const t=S[j], d=t[3]-b, f=nx.get(j)||0, p=pv.get(j)||0;
+  h+=top.map(([j,rel],n)=>{const t=S[j], [d,tl]=tempo(b,t[3]), f=nx.get(j)||0, p=pv.get(j)||0;
     return `<div class="row" data-j="${j}"><div class="rk">${n+1}</div>
-    <div><div class="rt">${esc(t[0])}</div><div class="ra">${esc(t[1])} · ${t[3]} BPM (${d>0?'+':d<0?'−':'±'}${Math.abs(d)})${t[4]?` · ${t[4]}${rel?' ('+rel+')':''}`:''}${!useG&&CAT[j]>=0?' · '+esc(GN[CAT[j]]):''}${f?` · schon ${f}× danach`:''}${!f&&p?` · ${p}× davor`:''}</div></div>
+    <div><div class="rt">${esc(t[0])}</div><div class="ra">${esc(t[1])} · ${t[3]} BPM (${tl?tl+'es Tempo, ':''}${d>0?'+':d<0?'−':'±'}${Math.abs(d)})${t[4]?` · ${t[4]}${rel?' ('+rel+')':''}`:''}${!useG&&CAT[j]>=0?' · '+esc(GN[CAT[j]]):''}${f?` · schon ${f}× danach`:''}${!f&&p?` · ${p}× davor`:''}</div></div>
     <div class="rc"><b>${fmt(t[2])}×</b><span>gespielt</span></div>
     <div class="bar"><i style="width:${t[2]/mx*100}%"></i></div></div>`;}).join('');
-  if(top.length) h+=`<div class="hint">${fmt(res.length)} Songs mit ±${state.tol} BPM${useG?' im Genre „'+esc(GN[c])+'“':' (alle Genres)'}${useKey?' und harmonisch passendem Key (gleich, ±1 oder Dur/Moll-Wechsel)':''}, sortiert nach deinen Plays.</div>`;
+  if(top.length) h+=`<div class="hint">${fmt(res.length)} Songs mit ±${state.tol} BPM (auch halbes/doppeltes Tempo)${useG?' im Genre „'+esc(GN[c])+'“':' (alle Genres)'}${useKey?' und harmonisch passendem Key (gleich, ±1 oder Dur/Moll-Wechsel)':''}, sortiert nach deinen Plays.</div>`;
   out.innerHTML=h;
   out.querySelectorAll('.row').forEach(r=>r.addEventListener('click',()=>pick(+r.dataset.j,false)));
 }
