@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
 <title>Folgesong-Finder</title>
+<meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-title" content="Folgesongs">
@@ -60,7 +60,7 @@ mark{background:none;color:var(--acc2)}
 .chips button.on{background:var(--acc);border-color:var(--acc);color:#111;font-weight:700}
 .ghead{display:flex;justify-content:space-between;align-items:baseline;margin:6px 0 6px}
 .ghead h2{font-size:19px;margin:0}
-.hidden{display:none}
+.hidden{display:none!important}
 .more{display:block;margin:16px auto 0;font:inherit;font-size:14px;background:var(--panel);border:1px solid var(--line);color:var(--text);padding:10px 20px;border-radius:10px;cursor:pointer}
 </style>
 </head>
@@ -78,7 +78,10 @@ mark{background:none;color:var(--acc2)}
     <div id="sugg"></div>
   </div>
   <div class="ctrl">
-    <div><span class="lbl">Richtung</span><div class="seg" id="dir"><button data-d="next" class="on">Danach</button><button data-d="prev">Davor</button></div></div>
+    <div><span class="lbl">Richtung</span><div class="seg" id="dir"><button data-d="next" class="on">Danach</button><button data-d="prev">Davor</button><button data-d="match">Passend</button></div></div>
+    <div id="tolBox" class="hidden"><span class="lbl">BPM ±</span><div class="seg" id="tol"><button data-t="3">3</button><button data-t="5" class="on">5</button><button data-t="8">8</button></div>
+      <span class="lbl" style="margin-left:10px">Key</span><div class="seg" id="kmode"><button data-k="1" class="on">passend</button><button data-k="0">egal</button></div>
+      <span class="lbl" style="margin-left:10px">Genre</span><div class="seg" id="gmode"><button data-g="1" class="on">gleich</button><button data-g="0">egal</button></div></div>
     <div><span class="lbl">Anzahl</span><div class="seg" id="cnt"><button data-n="5">5</button><button data-n="10" class="on">10</button><button data-n="20">20</button><button data-n="50">50</button></div>
       <input id="nIn" type="number" min="1" max="500" value="10" aria-label="Eigene Anzahl"></div>
   </div>
@@ -173,6 +176,8 @@ function render(){
   if(state.song===null){ cr.innerHTML=''; renderStart(); return; }
   cr.innerHTML = state.trail.length ? state.trail.map((i,k)=>`<a data-k="${k}">${esc(S[i][0])}</a> ›`).join(' ')+` <span>${esc(S[state.song][0])}</span>` : '';
   cr.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{const k=+a.dataset.k; state.song=state.trail[k]; state.trail=state.trail.slice(0,k); render();}));
+  document.getElementById('tolBox').classList.toggle('hidden',state.dir!=='match');
+  if(state.dir==='match'){ renderMatch(); return; }
   const s=S[state.song], lst=(state.dir==='next'?NEXT:PREV)[state.song], tot=sum(lst), top=lst.slice(0,state.n), mx=top.length?top[0][1]:1;
   let h=`<div class="head"><div class="t">${esc(s[0])}</div><div class="a">${esc(s[1])}</div>
     <div class="stats">${D.G?`<span><b>${esc(D.G[s[5]])}</b>${s[6]?` · ${s[6]}`:''}</span>`:''}<span><b>${fmt(s[2])}×</b> gespielt</span>${s[3]?`<span><b>${s[3]}</b> BPM</span>`:''}${s[4]?`<span>Key <b>${s[4]}</b></span>`:''}<span><b>${fmt(lst.length)}</b> verschiedene Songs ${state.dir==='next'?'danach':'davor'}</span></div></div>`;
@@ -231,6 +236,50 @@ function renderGenres(){
   document.getElementById('gout').innerHTML = h;
   const gm=document.getElementById('gMore'); if(gm) gm.addEventListener('click',()=>{gN+=50; renderGenres();});
   document.querySelectorAll('#gout .row').forEach(r=>r.addEventListener('click',()=>{setView('finder'); pick(+r.dataset.j,true);}));
+}
+
+const CAT=S.map(s=>s[5]??-1), GN=D.G||[];
+state.tol=5; state.km=1; state.gm=1;
+try{const sv=JSON.parse(localStorage.getItem('fsf')||'{}'); if(sv.tol)state.tol=sv.tol; if(sv.km!==undefined)state.km=sv.km; if(sv.gm!==undefined)state.gm=sv.gm;}catch(e){}
+const saveM=()=>{try{const sv=JSON.parse(localStorage.getItem('fsf')||'{}');sv.tol=state.tol;sv.km=state.km;sv.gm=state.gm;localStorage.setItem('fsf',JSON.stringify(sv))}catch(e){}};
+function wire(id,attr,key){document.querySelectorAll('#'+id+' button').forEach(b=>{b.classList.toggle('on',+b.dataset[attr]===state[key]);
+  b.addEventListener('click',()=>{state[key]=+b.dataset[attr];document.querySelectorAll('#'+id+' button').forEach(x=>x.classList.toggle('on',x===b));saveM();render();});});}
+wire('tol','t','tol'); wire('kmode','k','km'); wire('gmode','g','gm');
+const pk=k=>{const m=/^(\d{1,2})([AB])$/.exec(k||'');return m?[+m[1],m[2]]:null;};
+function keyRel(a,b){const x=pk(a),y=pk(b);if(!x||!y)return null;
+  if(x[0]===y[0]&&x[1]===y[1])return 'gleicher Key';
+  if(x[0]===y[0])return 'Dur/Moll-Wechsel';
+  const d=(y[0]-x[0]+12)%12; if(x[1]===y[1]&&(d===1||d===11))return d===1?'+1':'−1';
+  return null;}
+function renderMatch(){
+  const i=state.song, s=S[i], c=CAT[i], b=s[3], k=s[4];
+  const nx=new Map(NEXT[i]), pv=new Map(PREV[i]);
+  const useKey=state.km===1&&pk(k), useG=state.gm===1&&c>=0;
+  let h=`<div class="head"><div class="t">${esc(s[0])}</div><div class="a">${esc(s[1])}</div>
+    <div class="stats"><span><b>${fmt(s[2])}×</b> gespielt</span>${b?`<span><b>${b}</b> BPM</span>`:''}${k?`<span>Key <b>${k}</b></span>`:''}<span><b>${c>=0?esc(GN[c]):'kein Genre'}</b></span></div></div>`;
+  if(!b){ out.innerHTML=h+`<div class="empty">Für diesen Song ist kein BPM-Wert gespeichert.</div>`; return; }
+  const notes=[];
+  if(state.gm===1&&c<0) notes.push('Dieser Song ist keinem Genre zugeordnet. Deshalb zählen nur BPM und Key.');
+  if(state.km===1&&!pk(k)) notes.push('Für diesen Song ist kein Key gespeichert. Deshalb wird der Key nicht berücksichtigt.');
+  const res=[];
+  for(let j=0;j<S.length;j++){ if(j===i||!S[j][3]) continue;
+    const d=S[j][3]-b; if(Math.abs(d)>state.tol) continue;
+    if(useG && CAT[j]!==c) continue;
+    const rel=keyRel(k,S[j][4]);
+    if(useKey && !rel) continue;
+    res.push([j,rel]);}
+  res.sort((x,y)=>S[y[0]][2]-S[x[0]][2]);
+  const top=res.slice(0,state.n), mx=top.length?S[top[0][0]][2]:1;
+  if(notes.length) h+=`<div class="hint" style="margin:0 0 8px">${notes.join(' ')}</div>`;
+  if(!top.length) h+=`<div class="empty">Keine passenden Songs gefunden. Probier einen größeren BPM-Bereich${useKey?' oder Key „egal“':''}${useG?' oder Genre „egal“':''}.</div>`;
+  h+=top.map(([j,rel],n)=>{const t=S[j], d=t[3]-b, f=nx.get(j)||0, p=pv.get(j)||0;
+    return `<div class="row" data-j="${j}"><div class="rk">${n+1}</div>
+    <div><div class="rt">${esc(t[0])}</div><div class="ra">${esc(t[1])} · ${t[3]} BPM (${d>0?'+':d<0?'−':'±'}${Math.abs(d)})${t[4]?` · ${t[4]}${rel?' ('+rel+')':''}`:''}${!useG&&CAT[j]>=0?' · '+esc(GN[CAT[j]]):''}${f?` · schon ${f}× danach`:''}${!f&&p?` · ${p}× davor`:''}</div></div>
+    <div class="rc"><b>${fmt(t[2])}×</b><span>gespielt</span></div>
+    <div class="bar"><i style="width:${t[2]/mx*100}%"></i></div></div>`;}).join('');
+  if(top.length) h+=`<div class="hint">${fmt(res.length)} Songs mit ±${state.tol} BPM${useG?' im Genre „'+esc(GN[c])+'“':' (alle Genres)'}${useKey?' und harmonisch passendem Key (gleich, ±1 oder Dur/Moll-Wechsel)':''}, sortiert nach deinen Plays.</div>`;
+  out.innerHTML=h;
+  out.querySelectorAll('.row').forEach(r=>r.addEventListener('click',()=>pick(+r.dataset.j,false)));
 }
 setN(state.n);
 document.querySelectorAll('#dir button').forEach(x=>x.classList.toggle('on',x.dataset.d===state.dir));

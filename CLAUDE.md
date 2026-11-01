@@ -36,4 +36,4 @@ Jeder Song hat genau ein Genre aus Joshuas Liste (24 Genres, Reihenfolge in `wer
   Die IDs sind die Positionen in der Songliste (`D.s`). Songs bis Platz 2.400 (≥ 5 Plays, 92 % der Plays) sind durchgesehen.
 - `werkzeuge/einbauen.py`: schreibt Genre und Jahr in `index.html`. Danach committen und pushen, Artefakt angleichen.
 - Neue Playlisten/Songs: Songliste neu erzeugen ändert die IDs, dann müssen Hand-Genres und Korrekturen neu zugeordnet werden.
-- Offen: Joshua fragen, wie der Modus „Passend“ funktionieren soll.
+- Modus „Passend“ (im Artefakt entstanden, auf die Website übernommen): Songs mit ±3/5/8 BPM, harmonischem Key (gleich, ±1, Dur/Moll) und gleichem Genre, sortiert nach Plays.
