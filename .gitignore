@@ -1,2 +1,3 @@
 .DS_Store
 werkzeuge/cache/
+__pycache__/
