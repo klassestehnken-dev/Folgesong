@@ -27,7 +27,7 @@ dazu Listen nach Genre (alle Songs, mit Jahr) und die meistgespielten Songs.
 - Lokal testen: Browser-Vorschau „folgesong“ aus `Coding/.claude/launch.json` (http://localhost:8765).
 
 ## Genres und Erscheinungsjahre
-Jeder Song hat genau ein Genre aus Joshuas Liste (24 Genres, Reihenfolge in `werkzeuge/einbauen.py`) und das erste Erscheinungsjahr.
+Jeder Song hat genau ein Genre aus Joshuas Liste (27 Genres, Reihenfolge in `werkzeuge/einbauen.py`; House & EDM ist in Charts/Club/Deep geteilt, Rock & Indie in Rock-Klassiker/Indie – das macht `unterteilen()` in `zuordnen.py`) und das erste Erscheinungsjahr.
 - `werkzeuge/nachschlagen.py deezer|mb|mbartist|itunes`: Online-Abfrage mit Cache in `werkzeuge/cache/` (nicht im Repo).
   MusicBrainz nur 1 Anfrage/s, alles zusammen dauert mehrere Stunden; Abbruch jederzeit möglich, setzt beim Stand fort.
 - `werkzeuge/zuordnen.py [--test]`: feste Regeln (eigene Mixe, Specials, ab 2020 → 2020er, Electro-Swing, Balkan,

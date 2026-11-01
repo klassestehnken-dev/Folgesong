@@ -204,6 +204,47 @@ class Bayes:
         return out
 
 
+# Zweite Stufe: House & EDM und Rock & Indie werden weiter unterteilt (nach Tags, Deezer-Bekanntheit, BPM, Jahr)
+DEEP = re.compile(r"deep house|nu.?disco|^disco$|downtempo|lounge|chill|indie dance|soulful|melodic|organic|"
+                  r"\bjazz|\bfunk", re.I)
+CLUB = re.compile(r"electro house|big room|tech house|techno|trance|hard ?style|dutch|bounce|jumpstyle|hard dance|"
+                  r"bass house|fidget|minimal|electroclash|complextro|dubstep|drum and bass|breakbeat", re.I)
+CHARTS = re.compile(r"^pop$|dance pop|dance-pop|electropop|tropical house|charts", re.I)
+KLASSIK = re.compile(r"classic rock|hard rock|metal|blues|album rock|arena rock|glam|southern rock|grunge|"
+                     r"funk rock|stoner|rock and roll|rock & roll|psychedelic", re.I)
+INDIE = re.compile(r"indie|punk|emo|britpop|garage|post-punk|new wave|power pop|pop rock|alternative dance", re.I)
+
+ELTERN = {"Charts-House & EDM": "House & EDM", "Club & Electro House": "House & EDM",
+          "Deep House & Nu-Disco": "House & EDM", "Rock-Klassiker & Hard Rock": "Rock & Indie",
+          "Indie & Pop-Punk": "Rock & Indie"}
+
+
+def unterteilen(g, s, api, y, rang):
+    tags = [t.split(":", 1)[1] for t in api if t.startswith(("mb:", "mba:", "dz:", "it:"))]
+    def n(rx): return sum(1 for t in tags if rx.search(t))
+    bpm = s.get("bpm") or 0
+    if g == "House & EDM":
+        deep, club, charts = n(DEEP), n(CLUB), n(CHARTS)
+        if rang and rang >= 550000:
+            charts += 3
+        elif rang and rang < 350000:
+            club += 1.5
+        if bpm and bpm <= 122:
+            deep += 1
+        elif bpm >= 126:
+            club += 0.5
+        best = max([(charts, "Charts-House & EDM"), (club, "Club & Electro House"), (deep, "Deep House & Nu-Disco")])
+        return best[1] if best[0] > 0 else "Club & Electro House"
+    if g == "Rock & Indie":
+        k, i = n(KLASSIK), n(INDIE)
+        if y and y < 1995:
+            k += 1.5
+        elif y and y >= 2000:
+            i += 1
+        return "Rock-Klassiker & Hard Rock" if k > i else "Indie & Pop-Punk"
+    return g
+
+
 def main():
     test = "--test" in sys.argv
     songs = json.load(open(os.path.join(CACHE, "songs.json"), encoding="utf-8"))
@@ -215,6 +256,8 @@ def main():
     korr = lade_korrekturen()
     hand = {s["id"]: s["genre_hand"] for s in songs if s["genre_hand"]}
     hand.update({int(k): v[0] for k, v in korr.items()})
+    # Untergenres lernt der Klassifikator als ihr Obergenre, die Aufteilung macht unterteilen()
+    hand = {i: ELTERN.get(g, g) for i, g in hand.items()}
 
     M = {}
     for s in songs:
@@ -321,6 +364,8 @@ def main():
             if g != hand[i] and not eigener_mix(s):
                 hinweis = f"Konflikt: Online-Daten deuten auf {g}"
             g, sich, q = hand[i], "hoch", "hand"
+        dzr = Q[0].get(str(i)) or []
+        g = unterteilen(g, s, api, y, dzr[0].get("rank") if dzr else None)
         ergebnis[str(i)] = {"genre": g, "jahr": y, "jahr_quelle": yq, "sicherheit": sich, "quelle": q,
                             "api": api[:8], "hinweis": hinweis}
     json.dump(ergebnis, open(os.path.join(CACHE, "genres.json"), "w", encoding="utf-8"), ensure_ascii=False)
